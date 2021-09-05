@@ -36,7 +36,7 @@ public class CalculadoraMockTest {
         //Obs: o spy executa métodos voids enquanto o mock não.
 
         //Quando não quiser que o mockito não faça nada, utilize a seguinte sintaxe
-        Mockito.doNothing().when(calcSpy).dividir(1, 1);
+//        Mockito.doNothing().when(calcSpy).dividir(1, 1);
 
         Mockito.when(calcMock.somar(2, 2)).thenCallRealMethod();
         System.out.println("Mock chama método real se as condições são satisfatórias: " + calcMock.somar(2, 2));

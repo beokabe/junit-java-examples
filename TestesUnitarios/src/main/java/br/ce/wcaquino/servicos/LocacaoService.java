@@ -16,7 +16,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static br.ce.wcaquino.utils.DataUtils.adicionarDias;
-import static br.ce.wcaquino.utils.DataUtils.obterDataComDiferencaDias;
 
 public class LocacaoService {
 
@@ -34,12 +33,12 @@ public class LocacaoService {
 
         locacao.setFilme(filmes);
         locacao.setUsuario(usuario);
-        locacao.setDataLocacao(new Date());
+        locacao.setDataLocacao(Calendar.getInstance().getTime());
 
-        filmes.stream().distinct().forEach(filme -> locacao.somarValor(filme.getPrecoLocacao()));
+        calcularValorLocacao(filmes, locacao);
 
         //Entrega no dia seguinte
-        Date dataEntrega = new Date();
+        Date dataEntrega = Calendar.getInstance().getTime();
         dataEntrega = adicionarDias(dataEntrega, 1);
         locacao.setDataRetorno(dataEntrega);
 
@@ -47,6 +46,11 @@ public class LocacaoService {
         locacaoDAO.salvar(locacao);
 
         return locacao;
+    }
+
+    private boolean calcularValorLocacao(List<Filme> filmes, Locacao locacao) {
+        filmes.stream().distinct().forEach(filme -> locacao.somarValor(filme.getPrecoLocacao()));
+        return true; //apenas para teste
     }
 
     private void validarUsuario(Usuario usuario) throws LocadoraException {

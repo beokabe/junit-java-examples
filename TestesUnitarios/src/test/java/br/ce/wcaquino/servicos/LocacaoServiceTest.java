@@ -200,7 +200,7 @@ public class LocacaoServiceTest {
             //Verificação
             Assert.fail();
         } catch (LocadoraException ex) {
-            Assert.assertThat(ex.getMessage(), is("Usuário está negativado no SPC"));
+            Assert.assertThat(ex.getMessage(), is("Problemas com SPC, tente novamente."));
         }
     }
 
