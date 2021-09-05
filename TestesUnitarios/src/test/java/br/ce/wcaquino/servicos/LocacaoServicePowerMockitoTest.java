@@ -19,6 +19,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 import static org.hamcrest.CoreMatchers.*;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -97,6 +98,10 @@ public class LocacaoServicePowerMockitoTest {
 //    public void deveCalcularValorLocacao() throws Exception {
 //        List<Filme> filmes = Arrays.asList(FilmeBuilder.filmeBuilder().agora());
 //
+//    Class<LocacaoService> clazz = LocacaoService.class;
+//    Method method = clazz.getDeclaredMethod("calcularValorLocacao", List.class, Locacao.class);
+//    method.setAcessible(true);
+//    method.invoke(service, filmes, locacao);
 //        Boolean valor = (Boolean) Whitebox.invokeMethod(locacaoService, "calcularValorLocacao", filmes, locacao);
 //
 //        Assert.assertThat(valor, is(true));
