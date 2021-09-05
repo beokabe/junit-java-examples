@@ -62,7 +62,7 @@ public class LocacaoServiceBeforeEAfterClass {
         //Método assertThat tem uma leitura diferente do assertEquals,
         // mas tem a mesma lógica que assertEquals ou assertNotEquals:
         // "Verifique que .... é igual a ...." ou "Verifique que .... não é igual a ..... ".
-        Assert.assertThat(locacao.getValor(), is(equalTo(50.0)));
+        Assert.assertThat(locacao.getValor(), is(equalTo(1050.0)));
         Assert.assertThat(locacao.getValor(), is(not(25.0)));
         Assert.assertThat(isMesmaData(locacao.getDataLocacao(), new Date()), is(true));
         Assert.assertThat(isMesmaData(locacao.getDataRetorno(), obterDataComDiferencaDias(1)), is(true));

@@ -5,6 +5,7 @@ import br.ce.wcaquino.entidades.Locacao;
 import br.ce.wcaquino.entidades.Usuario;
 import br.ce.wcaquino.exceptions.FilmeSemEstoqueException;
 import br.ce.wcaquino.exceptions.LocadoraException;
+import br.ce.wcaquino.matchers.MatchersProprios;
 import org.junit.*;
 import org.junit.rules.ErrorCollector;
 import org.junit.rules.ExpectedException;
@@ -45,6 +46,9 @@ public class LocacaoServiceTest {
 
         locacaoService = new LocacaoService();
         locacao = locacaoService.alugarFilme(usuario, filmes);
+
+//        Assert.assertThat(filmeAnabelle3.getNome(), new NomeFilmeMatcher("anabelle 3")); -> não recomendado
+        Assert.assertThat(filmeAnabelle3.getNome(), MatchersProprios.nomeEhIgual("anabelle 3"));
     }
 
     //Quando trabalho com Before, o JUnit reinicializa todas as variáveis, então esse contador++ só será incrementado uma vez
@@ -87,6 +91,7 @@ public class LocacaoServiceTest {
         errorCollector.checkThat(locacao.getValor(), is(not(20.0)));
         errorCollector.checkThat(isMesmaData(locacao.getDataLocacao(), new Date()), is(true));
         errorCollector.checkThat(isMesmaData(locacao.getDataRetorno(), obterDataComDiferencaDias(1)), is(true));
+        errorCollector.checkThat(locacao.getDataRetorno(), MatchersProprios.ehHojeComDiferencaDias(1));
     }
 
     @Test(expected = FilmeSemEstoqueException.class)

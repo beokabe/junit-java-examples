@@ -5,6 +5,7 @@ import br.ce.wcaquino.entidades.Locacao;
 import br.ce.wcaquino.entidades.Usuario;
 import br.ce.wcaquino.exceptions.FilmeSemEstoqueException;
 import br.ce.wcaquino.exceptions.LocadoraException;
+import buildermaster.BuilderMaster;
 
 import java.util.Date;
 import java.util.List;
@@ -59,5 +60,9 @@ public class LocacaoService {
         if (Objects.isNull(usuario)) {
             throw new LocadoraException("Usuário inexistente.");
         }
+    }
+
+    public static void main(String[] args) {
+        new BuilderMaster().gerarCodigoClasse(Locacao.class);
     }
 }
