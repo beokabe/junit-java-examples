@@ -1,19 +1,21 @@
 package br.ce.wcaquino.servicos;
 
+import br.ce.wcaquino.dados.LocacaoDAO;
 import br.ce.wcaquino.entidades.Filme;
 import br.ce.wcaquino.entidades.Locacao;
 import br.ce.wcaquino.entidades.Usuario;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.is;
 
 @RunWith(Parameterized.class)
 public class CalculoValorLocacaoTest {
@@ -39,6 +41,8 @@ public class CalculoValorLocacaoTest {
     @Before
     public void setup() {
         service = new LocacaoService();
+        service.setLocacaoDAO(Mockito.mock(LocacaoDAO.class));
+        service.setSpcService(Mockito.mock(SPCService.class));
     }
 
     //Esse método faz com que inicialize as variáveis de teste e todos os cenários da matriz sejame executados no método alugarFilmeTest

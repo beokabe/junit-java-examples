@@ -6,10 +6,13 @@ import br.ce.wcaquino.servicos.LocacaoServiceBeforeEAfterClass;
 import br.ce.wcaquino.servicos.LocacaoServiceTest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 //Suite de classes executa todos os métodos de uma vez só. Porém a suite acaba duplicando a bateria de teste quando todos os testes são executados.
+
+@Ignore
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         CalculadoraTDDServiceTest.class,

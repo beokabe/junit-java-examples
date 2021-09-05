@@ -1,12 +1,11 @@
 package br.ce.wcaquino.servicos;
 
+import br.ce.wcaquino.dados.LocacaoDAO;
 import br.ce.wcaquino.entidades.Filme;
 import br.ce.wcaquino.entidades.Locacao;
 import br.ce.wcaquino.entidades.Usuario;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,9 +21,11 @@ public class LocacaoServiceBeforeEAfterClass {
     Usuario usuario = new Usuario("Beatriz");
     List<Filme> filmes = new ArrayList<>();
     Locacao locacao;
-    LocacaoService locacaoService;
+    LocacaoService locacaoService = new LocacaoService();
 
     private void init() throws Exception {
+        locacaoService.setLocacaoDAO(Mockito.mock(LocacaoDAO.class));
+
         Filme filmeAnabelle3 = new Filme("Anabelle 3", 10, 50.0);
         Filme filmeEdnaldoPereira = new Filme("Você não vale nada", 10, 1000.0);
 
@@ -51,6 +52,7 @@ public class LocacaoServiceBeforeEAfterClass {
         System.out.println("After Class");
     }
 
+    @Ignore
     @Test
     public void alugarFilmeTest() throws Exception {
         init();

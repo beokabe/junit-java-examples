@@ -13,8 +13,9 @@ import br.ce.wcaquino.matchers.MatchersProprios;
 import org.junit.*;
 import org.junit.rules.ErrorCollector;
 import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
+import org.mockito.*;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -23,26 +24,37 @@ import java.util.List;
 import static br.ce.wcaquino.utils.DataUtils.isMesmaData;
 import static br.ce.wcaquino.utils.DataUtils.obterDataComDiferencaDias;
 import static org.hamcrest.CoreMatchers.*;
+import static org.mockito.Mockito.when;
 
-public class LocacaoServiceTest {
+public class LocacaoServiceComAnotacoesMockTest {
 
-    Usuario usuario = new Usuario("Beatriz");
-    List<Filme> filmes;
-    Locacao locacao = new Locacao();
+    @InjectMocks //injeta os mocks na classe
     LocacaoService locacaoService;
 
+    @Mock //mock da classe locacaoService
     private LocacaoDAO locacaoDAO;
-    private SPCService spcService;
-    private EmailService email;
 
-    int contador = 0;
-    private static int contadorEstatico = 0;  //Esse contador será incrementado no Before ou After, pois ele é estático
+    @Mock
+    private SPCService spcService;
+
+    @Mock
+    private EmailService email;
 
     @Rule
     public ErrorCollector errorCollector = new ErrorCollector();
 
     @Rule
     public ExpectedException expected = ExpectedException.none();
+
+    Usuario usuario = new Usuario("Beatriz");
+    List<Filme> filmes;
+    Locacao locacao = new Locacao();
+
+    @Before
+    public void setup() {
+        //Injeta os mocks em Locação Service
+        MockitoAnnotations.initMocks(this);
+    }
 
     private void init(int estoque, Usuario usuario, boolean filmesIsNull) throws Exception {
         Filme filmeAnabelle3 = new Filme("Anabelle 3", estoque, 50.0);
@@ -54,34 +66,9 @@ public class LocacaoServiceTest {
             filmes.add(filmeEdnaldoPereira);
         }
 
-        locacaoService = new LocacaoService();
-
-        locacaoDAO = Mockito.mock(LocacaoDAO.class);
-        locacaoService.setLocacaoDAO(locacaoDAO);
-
-        spcService = Mockito.mock(SPCService.class);
-        locacaoService.setSpcService(spcService);
-
-        email = Mockito.mock(EmailService.class);
-        locacaoService.setEmailService(email);
-
         locacao = locacaoService.alugarFilme(usuario, filmes);
 
-//        Assert.assertThat(filmeAnabelle3.getNome(), new NomeFilmeMatcher("anabelle 3")); -> não recomendado
         Assert.assertThat(filmeAnabelle3.getNome(), MatchersProprios.nomeEhIgual("anabelle 3"));
-    }
-
-    //Quando trabalho com Before, o JUnit reinicializa todas as variáveis, então esse contador++ só será incrementado uma vez
-    @Before
-    public void setup() {
-        contador++;
-        contadorEstatico++;
-    }
-
-    @After
-    public void tearDown() {
-        System.out.println("Contador estático " + contador);
-        System.out.println("Contador global " + contadorEstatico);
     }
 
     @Test
@@ -92,9 +79,6 @@ public class LocacaoServiceTest {
         Assert.assertTrue(isMesmaData(locacao.getDataLocacao(), new Date()));
         Assert.assertTrue(isMesmaData(locacao.getDataRetorno(), obterDataComDiferencaDias(1)));
 
-        //Método assertThat tem uma leitura diferente do assertEquals,
-        // mas tem a mesma lógica que assertEquals ou assertNotEquals:
-        // "Verifique que .... é igual a ...." ou "Verifique que .... não é igual a ..... ".
         Assert.assertThat(locacao.getValor(), is(equalTo(1050.0)));
         Assert.assertThat(locacao.getValor(), is(not(25.0)));
         Assert.assertThat(isMesmaData(locacao.getDataLocacao(), new Date()), is(true));
@@ -105,7 +89,6 @@ public class LocacaoServiceTest {
     public void alugarFilmeComErrorCollectorTest() throws Exception {
         init(10, usuario, false);
 
-        //Mapeia todas as falhas (exceções esperadas no teste) num teste e as aponta, facilitando a identificação de falha no primeiro teste
         errorCollector.checkThat(locacao.getValor(), is(equalTo(1050.0)));
         errorCollector.checkThat(locacao.getValor(), is(not(20.0)));
         errorCollector.checkThat(isMesmaData(locacao.getDataLocacao(), new Date()), is(true));
@@ -131,19 +114,8 @@ public class LocacaoServiceTest {
         }
     }
 
-    @Ignore //Esse teste deve falhar, por isso foi ignorado.
-    public void alugarFilmeSemEstoqueQueEsperaQueUmErroOcorraMasEleNaoOcorreTest() {
-        try {
-            init(10, usuario, false);
-            Assert.fail("Espera-se que o teste retorne uma exceção.");
-        } catch (Exception e) {
-            Assert.assertThat(e.getMessage(), is("Filme sem estoque."));
-        }
-    }
-
     @Test
     public void alugarFilmeSemEstoqueComTratamentoDeErroExpectedExceptionTest() throws Exception {
-        //ExpectedException deve ser declarada antes da Exception ser estourada
         expected.expect(FilmeSemEstoqueException.class);
         expected.expectMessage("Filme sem estoque.");
 
@@ -178,58 +150,31 @@ public class LocacaoServiceTest {
     }
 
     @Test
-    public void naoDeveAlugarFilmeParaNegativadoSPCTest() throws Exception {
-        Usuario usuarioCaloteiro = UsuarioBuilder.umUsuario().getUmUsuario();
+    public void deveTratarErroSPCTest() throws Exception {
+        //Cenário
+        Usuario usuario = UsuarioBuilder.umUsuario().getUmUsuario();
         List<Filme> filmes = Arrays.asList(FilmeBuilder.filmeBuilder().agora());
 
-        locacaoService = new LocacaoService();
+        when(spcService.possuiNegativacao(usuario)).thenThrow(new Exception("Falha catastrófica"));
 
-        locacaoDAO = Mockito.mock(LocacaoDAO.class);
-        locacaoService.setLocacaoDAO(locacaoDAO);
+        //Verificação
+        expected.expect(LocadoraException.class);
+        expected.expectMessage("Problemas com SPC, tente novamente.");
 
-        spcService = Mockito.mock(SPCService.class);
-        locacaoService.setSpcService(spcService);
-
-        email = Mockito.mock(EmailService.class);
-        locacaoService.setEmailService(email);
-
-        Mockito.when(spcService.possuiNegativacao(usuarioCaloteiro)).thenReturn(true);
-
-        try {
-            locacaoService.alugarFilme(usuario, filmes);
-            //Verificação
-            Assert.fail();
-        } catch (LocadoraException ex) {
-            Assert.assertThat(ex.getMessage(), is("Usuário está negativado no SPC"));
-        }
+        //Ação
+        locacaoService.alugarFilme(usuario, filmes);
     }
 
-    @Ignore
     @Test
-    public void deveEnviarEmailParaLocacoesAtrasadas() {
-        locacaoService = new LocacaoService();
+    public void deveProrrogarUmaLocacao() {
+        Locacao locacao = LocacaoBuilder.umLocacao().agora();
 
-        locacaoDAO = Mockito.mock(LocacaoDAO.class);
-        locacaoService.setLocacaoDAO(locacaoDAO);
+        locacaoService.prorrogarLocacao(locacao, 3);
 
-        locacaoService.setSpcService(spcService);
+        ArgumentCaptor<Locacao> argumentCaptor = ArgumentCaptor.forClass(Locacao.class);
+        Mockito.verify(locacaoDAO).salvar(argumentCaptor.capture());
+        Locacao locacaoRetornada = argumentCaptor.getValue();
 
-        email = Mockito.mock(EmailService.class);
-        locacaoService.setEmailService(email);
-
-        Usuario usuarioDesseTeste = UsuarioBuilder.umUsuario().getUmUsuario();
-        Usuario outroUsuario = UsuarioBuilder.umUsuario().comNome("Henrique").getUmUsuario();
-
-        List<Locacao> locacaos = Arrays.asList(LocacaoBuilder.umLocacao().comUsuario(usuarioDesseTeste).atrasada().agora(),
-                LocacaoBuilder.umLocacao().comUsuario(outroUsuario).agora());
-
-        Mockito.when(locacaoDAO.obterLocacoesPendentes()).thenReturn(locacaos);
-
-        locacaoService.notificarAtrasos();
-
-        Mockito.verify(email, Mockito.times(0)).notificarAtraso(Mockito.any(Usuario.class));
-        Mockito.verify(email, Mockito.never()).notificarAtraso(usuarioDesseTeste);
-        Mockito.verify(email, Mockito.never()).notificarAtraso(outroUsuario);
-        Mockito.verifyNoMoreInteractions(email);
+        errorCollector.checkThat(locacaoRetornada.getValor(), is(3.0));
     }
 }
